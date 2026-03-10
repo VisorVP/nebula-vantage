@@ -1,0 +1,152 @@
+name: Build Nebula Vantage AppImage (Beta)
+
+on:
+  push:
+    tags:
+      - 'v*-beta'
+      - 'v*-beta.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g. v2.2.22-beta)'
+        required: true
+        default: 'v2.2.22-beta'
+
+jobs:
+  build-appimage:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            python3 python3-pip python3-gi python3-gi-cairo \
+            gir1.2-gtk-4.0 gir1.2-adw-1 gir1.2-gst-1.0 \
+            libgtk-4-dev libadwaita-1-dev \
+            gstreamer1.0-tools gstreamer1.0-plugins-base \
+            gstreamer1.0-plugins-good gstreamer1.0-plugins-bad \
+            gstreamer1.0-plugins-ugly gstreamer1.0-libav \
+            python3-mutagen \
+            wget file fuse libfuse2
+
+      - name: Install appimagetool
+        run: |
+          wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage \
+            -O /usr/local/bin/appimagetool
+          chmod +x /usr/local/bin/appimagetool
+
+      - name: Build AppDir
+        run: |
+          mkdir -p AppDir/usr/bin
+          mkdir -p AppDir/usr/share/applications
+          mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
+
+          # Copy main script
+          cp nebula-vantage.py AppDir/usr/bin/nebula-vantage
+          chmod +x AppDir/usr/bin/nebula-vantage
+
+          # AppRun entry point
+          cat > AppDir/AppRun << 'APPRUN'
+          #!/bin/bash
+          HERE="$(dirname "$(readlink -f "${0}")")"
+          exec python3 "${HERE}/usr/bin/nebula-vantage" "$@"
+          APPRUN
+          chmod +x AppDir/AppRun
+
+          # Desktop file
+          cat > AppDir/usr/share/applications/org.nebulaprojects.vantage.desktop << 'DESKTOP'
+          [Desktop Entry]
+          Name=Nebula Vantage (Beta)
+          Comment=Media Player - Beta
+          Exec=nebula-vantage
+          Icon=org.nebulaprojects.vantage
+          Terminal=false
+          Type=Application
+          Categories=AudioVideo;Audio;Video;Player;GTK;
+          DESKTOP
+
+          # Symlink desktop file to AppDir root (required by AppImage spec)
+          cp AppDir/usr/share/applications/org.nebulaprojects.vantage.desktop AppDir/
+
+          # Icon — use a placeholder if no icon file exists
+          if [ -f "org.nebulaprojects.vantage.png" ]; then
+            cp org.nebulaprojects.vantage.png AppDir/usr/share/icons/hicolor/256x256/apps/
+            cp org.nebulaprojects.vantage.png AppDir/
+          else
+            # Generate a simple placeholder icon with Python
+            python3 - << 'PYICON'
+          try:
+              from PIL import Image, ImageDraw, ImageFont
+              img = Image.new('RGBA', (256, 256), (37, 99, 235, 255))
+              draw = ImageDraw.Draw(img)
+              draw.text((80, 70), "V", fill=(255,255,255,255))
+              img.save('AppDir/org.nebulaprojects.vantage.png')
+              import shutil
+              shutil.copy('AppDir/org.nebulaprojects.vantage.png',
+                'AppDir/usr/share/icons/hicolor/256x256/apps/org.nebulaprojects.vantage.png')
+          except Exception:
+              # Fallback: just copy any png or skip
+              import shutil, os
+              for f in os.listdir('.'):
+                  if f.endswith('.png'):
+                      shutil.copy(f, 'AppDir/org.nebulaprojects.vantage.png')
+                      shutil.copy(f, 'AppDir/usr/share/icons/hicolor/256x256/apps/org.nebulaprojects.vantage.png')
+                      break
+          PYICON
+          fi
+
+      - name: Package AppImage
+        run: |
+          VERSION=${{ steps.version.outputs.VERSION }}
+          ARCH=x86_64 appimagetool AppDir "NebulaVantage-${VERSION}-x86_64.AppImage"
+
+      - name: Upload AppImage as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NebulaVantage-AppImage
+          path: NebulaVantage-*.AppImage
+
+      - name: Create Beta Pre-Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.VERSION }}
+          name: "Nebula Vantage ${{ steps.version.outputs.VERSION }} — Beta"
+          prerelease: true
+          body: |
+            ## ⚠️ Beta Release
+
+            This is a **beta / unstable** build of Nebula Vantage. Features may be incomplete or broken.
+
+            ### How to run
+            ```bash
+            chmod +x NebulaVantage-${{ steps.version.outputs.VERSION }}-x86_64.AppImage
+            ./NebulaVantage-${{ steps.version.outputs.VERSION }}-x86_64.AppImage
+            ```
+
+            ### Requirements
+            - Linux x86_64
+            - GTK4 + libadwaita
+            - GStreamer (for playback)
+
+            ### What's in this build
+            - v2.2.22 features: playlist image icons, track/playlist edit dialogs, custom emoji icons
+            - Custom PNG/JPG icons for playlists and tracks
+            - Pencil edit button for playlists and songs
+
+            > ⚠️ Beta builds are pre-release. Use at your own risk.
+          files: NebulaVantage-*.AppImage
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
