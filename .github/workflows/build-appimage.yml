@@ -83,7 +83,7 @@ jobs:
           # Symlink desktop file to AppDir root (required by AppImage spec)
           cp AppDir/usr/share/applications/org.nebulaprojects.vantage.desktop AppDir/
 
-          # Icon (committed to repo)
+          # Icon — copy committed PNG directly
           cp org.nebulaprojects.vantage.png AppDir/usr/share/icons/hicolor/256x256/apps/org.nebulaprojects.vantage.png
           cp org.nebulaprojects.vantage.png AppDir/org.nebulaprojects.vantage.png
 
