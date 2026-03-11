@@ -1,0 +1,72 @@
+<svg width="256" height="256" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="30%" cy="30%" r="80%">
+      <stop offset="0%" stop-color="#0f2040"/>
+      <stop offset="100%" stop-color="#020810"/>
+    </radialGradient>
+    <linearGradient id="vgrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="50%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="vglow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <clipPath id="roundclip">
+      <rect width="120" height="120" rx="26"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect width="120" height="120" rx="26" fill="url(#bg)"/>
+
+  <!-- Stars -->
+  <circle cx="18" cy="20" r="0.9" fill="white" opacity="0.6"/>
+  <circle cx="95" cy="14" r="1.1" fill="white" opacity="0.5"/>
+  <circle cx="104" cy="44" r="0.7" fill="#22d3ee" opacity="0.7"/>
+  <circle cx="14" cy="88" r="0.9" fill="white" opacity="0.4"/>
+  <circle cx="100" cy="98" r="0.8" fill="#93c5fd" opacity="0.5"/>
+  <circle cx="105" cy="72" r="0.6" fill="#22d3ee" opacity="0.4"/>
+  <circle cx="10" cy="55" r="0.7" fill="white" opacity="0.35"/>
+
+  <g clip-path="url(#roundclip)">
+    <!-- Clapper arm (rotated above board) -->
+    <g transform="rotate(-18, 17, 52)">
+      <rect x="17" y="34" width="90" height="18" rx="2" fill="#1c1c22"/>
+      <rect x="35" y="34" width="15" height="18" fill="#111116"/>
+      <rect x="65" y="34" width="15" height="18" fill="#111116"/>
+      <rect x="95" y="34" width="12" height="18" fill="#111116"/>
+      <rect x="17" y="34" width="90" height="18" rx="2" fill="none" stroke="#063240" stroke-width="0.8"/>
+      <line x1="17" y1="51" x2="107" y2="51" stroke="#06b6d4" stroke-width="0.7" opacity="0.6"/>
+    </g>
+
+    <!-- Board body -->
+    <rect x="17" y="52" width="86" height="52" rx="4" fill="#16161e"/>
+    <rect x="17" y="52" width="86" height="52" rx="4" fill="none" stroke="#063240" stroke-width="1.2"/>
+
+    <!-- Stripe band -->
+    <rect x="18" y="53" width="84" height="16" rx="3" fill="#111116"/>
+    <line x1="35" y1="53" x2="35" y2="69" stroke="#2a2a36" stroke-width="1.2"/>
+    <line x1="52" y1="53" x2="52" y2="69" stroke="#2a2a36" stroke-width="1.2"/>
+    <line x1="69" y1="53" x2="69" y2="69" stroke="#2a2a36" stroke-width="1.2"/>
+    <line x1="86" y1="53" x2="86" y2="69" stroke="#2a2a36" stroke-width="1.2"/>
+    <line x1="17" y1="69" x2="103" y2="69" stroke="#06b6d4" stroke-width="0.8" opacity="0.7"/>
+
+    <!-- Hinge -->
+    <rect x="17" y="49" width="22" height="5" rx="1" fill="#28282e"/>
+    <circle cx="23" cy="52" r="2.2" fill="#22d3ee" opacity="0.85" filter="url(#glow)"/>
+    <circle cx="33" cy="52" r="2.2" fill="#22d3ee" opacity="0.85" filter="url(#glow)"/>
+    <circle cx="23" cy="52" r="1" fill="white" opacity="0.5"/>
+    <circle cx="33" cy="52" r="1" fill="white" opacity="0.5"/>
+
+    <!-- V -->
+    <text x="60" y="97" dominant-baseline="middle" text-anchor="middle"
+      font-family="'Arial Black', Impact, monospace" font-weight="900"
+      font-size="34" fill="url(#vgrad)" filter="url(#vglow)">V</text>
+  </g>
+</svg>
