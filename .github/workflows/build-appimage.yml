@@ -81,32 +81,9 @@ jobs:
           # Symlink desktop file to AppDir root (required by AppImage spec)
           cp AppDir/usr/share/applications/org.nebulaprojects.vantage.desktop AppDir/
 
-          # Icon — use a placeholder if no icon file exists
-          if [ -f "org.nebulaprojects.vantage.png" ]; then
-            cp org.nebulaprojects.vantage.png AppDir/usr/share/icons/hicolor/256x256/apps/
-            cp org.nebulaprojects.vantage.png AppDir/
-          else
-            # Generate a simple placeholder icon with Python
-            python3 - << 'PYICON'
-          try:
-              from PIL import Image, ImageDraw, ImageFont
-              img = Image.new('RGBA', (256, 256), (37, 99, 235, 255))
-              draw = ImageDraw.Draw(img)
-              draw.text((80, 70), "V", fill=(255,255,255,255))
-              img.save('AppDir/org.nebulaprojects.vantage.png')
-              import shutil
-              shutil.copy('AppDir/org.nebulaprojects.vantage.png',
-                'AppDir/usr/share/icons/hicolor/256x256/apps/org.nebulaprojects.vantage.png')
-          except Exception:
-              # Fallback: just copy any png or skip
-              import shutil, os
-              for f in os.listdir('.'):
-                  if f.endswith('.png'):
-                      shutil.copy(f, 'AppDir/org.nebulaprojects.vantage.png')
-                      shutil.copy(f, 'AppDir/usr/share/icons/hicolor/256x256/apps/org.nebulaprojects.vantage.png')
-                      break
-          PYICON
-          fi
+          # Icon (committed to repo)
+          cp org.nebulaprojects.vantage.png AppDir/usr/share/icons/hicolor/256x256/apps/org.nebulaprojects.vantage.png
+          cp org.nebulaprojects.vantage.png AppDir/org.nebulaprojects.vantage.png
 
       - name: Package AppImage
         run: |
